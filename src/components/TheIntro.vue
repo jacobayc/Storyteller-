@@ -22,7 +22,7 @@
     </div>
     <div class="welcome-message">
         <h1>
-          서랍 속 소박한 이야기들
+          소박한 이야기 모음
         </h1>
     </div>
     <div v-if="error" class="error-message">
