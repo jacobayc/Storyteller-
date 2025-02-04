@@ -29,7 +29,6 @@ export const useVisitorStore = defineStore('visitor', {
           .lt('visited_at', tomorrow.toISOString())
           .limit(1)
     
-            console.log(existingVisit)
         // 이미 오늘 방문 기록이 있거나 비로그인자의 경우 저장하지 않음
         if (existingVisit && existingVisit.length > 0 || authStore.user?.email == undefined) {
           return null
