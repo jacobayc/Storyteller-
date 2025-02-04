@@ -1,11 +1,21 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" v-if="!authStore.isGuest">
     <div v-if="isLoading"></div>
     <template v-else>
-      <TheHeader v-if="authStore.isLoggedIn" />
+      <TheHeader v-if="authStore.isLoggedIn"/>
       <main>
-        <TheIntro v-if="!authStore.isLoggedIn" />
+        <TheIntro v-if="!authStore.isLoggedIn"/>
         <TheWelcome v-if="authStore.isLoggedIn" />
+      </main>
+    </template>
+  </div>
+  <div class="app-container" v-else>
+    <div v-if="isLoading"></div>
+    <template v-else>
+      <TheHeader v-if="authStore.isGuest"/>
+      <main>
+        <TheIntro v-if="!authStore.isGuest"/>
+        <TheWelcome v-if="authStore.isGuest" />
       </main>
     </template>
   </div>

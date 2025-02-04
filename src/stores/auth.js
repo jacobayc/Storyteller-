@@ -7,6 +7,7 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     isLoggedIn: false,
     user: null, // 추가: 사용자 정보 저장
+    isGuest: false
   }),
   actions: {
     // 세션 체크
@@ -14,6 +15,23 @@ export const useAuthStore = defineStore('auth', {
       const { data: { session } } = await supabase.auth.getSession();
       this.isLoggedIn = !!session; // 세션이 있으면 true, 없으면 false
       this.user = session?.user.user_metadata || null; // 사용자 정보 저장
+    },
+
+    
+
+    //게스트로 로그인
+    signInAsGuest(guestData) {
+      this.isGuest = true;
+      this.user = {
+        ...guestData,
+        isGuest: true
+      };
+      const guest = JSON.parse(localStorage.getItem('guestData'))
+      if(guest == null) {
+        localStorage.setItem('guestData', JSON.stringify(this.user))
+      } else {
+        return
+      }
     },
 
     //로그인

@@ -11,6 +11,13 @@ export const useVisitorStore = defineStore('visitor', {
   actions: {
     async saveVisitor() {
       const authStore = useAuthStore()
+
+      // 금일 자정 ~ 익일 자정
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
       
       try {
         // 오늘 날짜의 방문 기록 확인
@@ -18,9 +25,11 @@ export const useVisitorStore = defineStore('visitor', {
           .from('visitor')
           .select('*')
           .eq('email', authStore.user?.email)
-          .gte('visited_at', new Date().toISOString().split('T')[0]) // 오늘 날짜 이후
+          .gte('visited_at', today.toISOString())
+          .lt('visited_at', tomorrow.toISOString())
           .limit(1)
     
+            console.log(existingVisit)
         // 이미 오늘 방문 기록이 있거나 비로그인자의 경우 저장하지 않음
         if (existingVisit && existingVisit.length > 0 || authStore.user?.email == undefined) {
           return null

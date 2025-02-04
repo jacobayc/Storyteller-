@@ -64,6 +64,10 @@ const toggleMenu = () => {
 };
 
 const openProfileModal = () => {
+  if(authStore.isGuest) {
+    alert('비회원은 사용할 수 없습니다.')
+    return
+  }
   isChange.value = true;
   isMenuOpen.value = false;
   // 현재 닉네임을 초기값으로 설정
@@ -93,6 +97,10 @@ const updateNickname = async () => {
 };
 
 const logout = async () => {
+  if(authStore.isGuest) {
+    authStore.isGuest = false;
+    return
+  }
   await authStore.logout();
   isMenuOpen.value = false; // 로그아웃 후 메뉴 닫기
 };

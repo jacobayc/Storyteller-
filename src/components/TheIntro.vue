@@ -11,6 +11,7 @@
         <input type="email" v-model="email" placeholder="이메일" class="input-field" />
         <input type="password" v-model="password" placeholder="비밀번호" class="input-field" />
         <button @click="signIn" class="submit-button">로그인</button>
+        <button @click="signInAsGuest" class="guest-button">비회원 입장</button>
       </div>
       <div v-else>
         <input type="email" v-model="email" placeholder="이메일" class="input-field" />
@@ -22,7 +23,7 @@
     </div>
     <div class="welcome-message">
         <h1>
-          소박한 이야기 모음
+          소박한 이야기 서랍
         </h1>
     </div>
     <div v-if="error" class="error-message">
@@ -67,6 +68,26 @@ const showLoginForm = () => {
 const showSignUpForm = () => {
     isLoginFormVisible.value = false;
 };
+
+// 게스트로 로그인
+const generateUniqueId = () => {
+  const timestamp = new Date().getTime(); // 현재 시간을 밀리초로
+  const random = Math.floor(Math.random() * 10000); // 0-9999 사이의 랜덤 숫자
+  return `${timestamp}${random}`;
+};
+
+const signInAsGuest = () => {
+  const uniqueId = generateUniqueId();
+  const guestEmail = `guest_${uniqueId}`;
+  
+  authStore.signInAsGuest({
+    email: guestEmail,
+    name: 'Guest',
+    nickname: `Guest_${uniqueId.slice(-6)}` // 마지막 6자리만 사용
+  });
+  router.push('/');
+};
+
 
 const signIn = async () => {
   error.value = null;
@@ -189,6 +210,11 @@ button.active {
 
 .submit-button:hover {
   filter: brightness(1.1);
+}
+
+.guest-button {
+  margin-top: 20px;
+  background-image: linear-gradient(to right, #f3b4f3, #FF69B4);
 }
 
 .error-message {

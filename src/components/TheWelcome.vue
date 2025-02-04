@@ -1,7 +1,7 @@
 <template>
   <div class="main-list">
     <div class="info">
-      <p v-if="user"> <b>Welcome</b> <span>{{ user.name }}({{ user.nickname }})</span><b> 님</b></p>
+      <p> <b>Welcome</b> <span>{{ user?.name || '비회원' }} ({{ user?.nickname || guest?.email }})</span><b> 님</b></p>
     </div>
     <div v-if="bookStore.error">Error: {{ bookStore.error.message }}</div>
     <div class="tools">
@@ -19,7 +19,7 @@
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
       </button>
-      <button class="write-button"  @click="showModal = !showModal">작성</button>
+      <button class="write-button"  @click="toggleWriteMode">작성</button>
       <button class="edit-button"  @click="toggleEditMode">수정</button>
       <button class="delete-button" @click="toggleDeleteMode">삭제</button>
     </div>
@@ -43,7 +43,7 @@
             :speed= ".5"
           />
         </b>
-        <button v-show="showTrashBin && book.email == user.email" class="book-delete-btn"  @click.stop="deleteBook(book.id, book.email)"></button>
+        <button v-show="(showTrashBin && book.email == guest?.email) || (showTrashBin && book.email == user?.email)" class="book-delete-btn"  @click.stop="deleteBook(book.id, book.email)"></button>
         <button v-show="isEditMode && book.email == user.email" class="book-edit-btn" @click.stop="editBook(book)">수정</button>
       </li>
     </ul>
@@ -91,6 +91,7 @@ const isEditMode = ref(false);
 const currentBook = ref(null);
 const searchText = ref('');
 const searchResult = ref('');
+const guest = ref(null);
 
 const handleSearch = () => {
   searchResult.value = searchText.value;
@@ -98,6 +99,7 @@ const handleSearch = () => {
 
 onMounted(async () => {
   await authStore.checkSession();
+  guest.value = JSON.parse(localStorage.getItem('guestData'))
   user.value = authStore.user; 
   newBook.value.email = authStore.user?.email
   newBook.value.name = authStore.user?.name
@@ -198,10 +200,10 @@ const saveBookToStore  = async (bookData, isEdit) => {
     
     //edit완료후 edit 모드 종료
     currentBook.value = null
-  } else { //일반 작성 모드
-    newBook.value.email = authStore.user?.email
-    newBook.value.name = authStore.user?.name
-    newBook.value.nickname = authStore.user?.nickname
+  } else { //일반 작성 모드    
+    newBook.value.email = authStore.user?.email ? authStore.user?.email : guest.value.email
+    newBook.value.name = authStore.user?.name ? authStore.user?.name : guest.value.email
+    newBook.value.nickname = authStore.user?.nickname ? authStore.user?.nickname : guest.value.nickname
     newBook.value = { ...newBook.value, ...bookData };
     try {
       await bookStore.saveBook(newBook.value);
@@ -215,13 +217,13 @@ const saveBookToStore  = async (bookData, isEdit) => {
 };
 
 const deleteBook = async (bookId, bookEmail) => {
-  if (!user.value) {
+  if (!user.value && !guest.value) {
       alert("로그인 후 이용해주세요.");
       router.push('/');
       return;
   }
   if (confirm('정말로 삭제하시겠습니까?')) { // confirm 메시지 한국어로 변경
-    if (bookEmail === user.value.email) { // bookEmail과 user.value.email 비교
+    if (bookEmail === user.value?.email || bookEmail === guest.value?.email) { // bookEmail과 user.value.email 비교
       try {
           await bookStore.deleteBook(bookId);
           bookStore.books = bookStore.books.filter(book => book.id !== bookId);
@@ -240,12 +242,29 @@ const editBook = (book) => {
   showModal.value = true
 }
 
+const toggleWriteMode = () => {
+  // if(authStore.isGuest) {
+  //   alert("비회원은 작성할 수 없습니다.")
+  //   return
+  // }
+  showModal.value = !showModal.value
+}
+
+
 const toggleEditMode = () => {
+  if(authStore.isGuest) {
+    alert("비회원은 수정할 수 없습니다.")
+    return
+  }
   isEditMode.value = !isEditMode.value
   showTrashBin.value = false
 }
 
 const toggleDeleteMode = () => {
+  // if(authStore.isGuest) {
+  //   alert("비회원은 삭제할 수 없습니다.")
+  //   return
+  // }
   showTrashBin.value = !showTrashBin.value
   isEditMode.value = false
 }
