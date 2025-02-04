@@ -33,7 +33,7 @@
             {{ part.text }}
           </mark>
         </p>
-        <p class="book-email">{{ book.email == user?.email ? `${book.nickname} (내 글)` : book.name }}</p>
+        <p class="book-email">{{ book.email == user?.email || book.email == guest?.email ? `${book.nickname} (내 글)` : book.name }}</p>
         <p class="book-count">{{ book.count_num }}</p>
         <p class="book-created-at">{{ book.formattedCreatedAt ? book.formattedCreatedAt : '방금전' }}</p>
         <b class="new-badge" v-show = "index == 0">
@@ -78,8 +78,9 @@ import Modal from '../components/Modal.vue';
 import { Vue3Lottie } from 'vue3-lottie'
 import animationJSON from '@/assets/new.json'
 import loadingJSON from '@/assets/loading.json'
-import searchIcon from '@/assets/search.svg'
+import { useVisitorStore } from '../stores/visitor';
 
+const visitorStore = useVisitorStore()
 const router = useRouter();
 const authStore = useAuthStore();
 const bookStore = useBookStore();
@@ -109,6 +110,11 @@ onMounted(async () => {
     await authStore.checkSession()
     user.value = authStore.user
   })
+  try {
+    await visitorStore.saveVisitor()
+  } catch (error) {
+    console.log(error,"not access visitor")
+  }
 });
 
 onUnmounted(() => {
