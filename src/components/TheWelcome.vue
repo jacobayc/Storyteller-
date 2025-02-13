@@ -21,7 +21,13 @@
       </button>
       <button class="write-button"  @click="toggleWriteMode">작성</button>
       <button class="edit-button"  @click="toggleEditMode">수정</button>
-      <button class="delete-button" @click="toggleDeleteMode">삭제</button>
+      <button class="delete-button" @click="toggleDeleteMode">
+        <svg width="22" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 19C6 20.1046 6.89543 21 8 21H16C17.1046 21 18 20.1046 18 19V7H6V19Z" fill="#efefef"/>
+          <path d="M19 4H5V6H19V4Z" fill="#efefef"/>
+          <path d="M12 2C10.8954 2 10 2.89543 10 4H14C14 2.89543 13.1046 2 12 2Z" fill="#efefef"/>
+        </svg>
+      </button>
     </div>
     <ul v-if="filteredBooks.length" class="book-list">
       <li v-for="(book, index) in filteredBooks" :key="book.id" :class="{ 'new-book': index === 0 }" class="book-item" @click="handleBookClick(book)">
@@ -43,7 +49,7 @@
             :speed= ".5"
           />
         </b>
-        <button v-show="(showTrashBin && book.email == guest?.email) || (showTrashBin && book.email == user?.email)" class="book-delete-btn"  @click.stop="deleteBook(book.id, book.email)"></button>
+        <button v-show="(showTrashBin && book.email == guest?.email) || (showTrashBin && book.email == user?.email) || (showTrashBin && adminUserCheck)" class="book-delete-btn"  @click.stop="deleteBook(book.id, book.email)"></button>
         <button v-show="isEditMode && book.email == user.email" class="book-edit-btn" @click.stop="editBook(book)">수정</button>
       </li>
     </ul>
@@ -229,7 +235,7 @@ const deleteBook = async (bookId, bookEmail) => {
       return;
   }
   if (confirm('정말로 삭제하시겠습니까?')) { // confirm 메시지 한국어로 변경
-    if (bookEmail === user.value?.email || bookEmail === guest.value?.email) { // bookEmail과 user.value.email 비교
+    if (bookEmail === user.value?.email || bookEmail === guest.value?.email || user.value?.email == 'jacobyc@spotv.net') { // bookEmail과 user.value.email 비교
       try {
           await bookStore.deleteBook(bookId);
           bookStore.books = bookStore.books.filter(book => book.id !== bookId);
@@ -242,6 +248,12 @@ const deleteBook = async (bookId, bookEmail) => {
     }
   }
 };
+
+const adminUserCheck = computed (()=> {
+  return (
+    authStore.user?.email == 'jacobyc@spotv.net'
+  )
+})
 
 const editBook = (book) => {
   currentBook.value = book
@@ -486,7 +498,8 @@ mark.highlight {
 }
 
 .delete-button {
-  background-color: #f44336; /* Red for "Delete" */
+  transform:translateY(7px);
+  background-color: #666565; /* Red for "Delete" */
 }
 
 button:hover {
